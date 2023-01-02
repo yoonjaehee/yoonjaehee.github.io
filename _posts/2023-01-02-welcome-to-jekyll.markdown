@@ -1,29 +1,33 @@
 ---
 layout: post
-title:  "Welcome to Jekyll!"
+title:  "1. MySQL architecture"
 date:   2023-01-02 14:16:54 +0900
 categories: jekyll update
 ---
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
+1. 논리적 아키텍쳐 
+- (클라이언트) -> (연결/스레드 핸들링 -> 파서 옵티마이저 -> 옵티마이저) -> (스토리지 엔진(innoDB)) 
+(1) 최상위 계층 (클라이언트) : 네트워크 기반 클라이언트/서버 도구 or 서버에 필요한 연결 처리, 인증, 보안 등의 서비스의 포함.
+(2) 두 번째 계층 : 쿼리 파싱, 분석, 최적화 및 모든 기본 제공 함수를 포함하여 MYSQL에서 대부분의 지능적인 부분이 여기에 속함.
+(3) 세 번째 계층 : 스토리지 엔진이 포함됨. MYSQL에 저장된 모든 데이터를 저장하고 검색하는 역할 담당. 
 
-Jekyll requires blog post files to be named according to the following format:
+* 스토리지 엔진 : 데이터가 디스크에서 저장되고 검색되는 방법을 구동하는 소프트웨어. mysql에서는 innoDB 권장.
 
-`YEAR-MONTH-DAY-title.MARKUP`
+2. 연결 관리 및 보안
+- 각 클라이언트 연결은 서버 프로세스 내에서 고유한 스레드를 가짐. 서버는 즉시 사용할 수 있는 스레드의 캐시 유지 관리 -> 새로운 연결마다 매번 스레드 생성/폐기 필요 x.
 
-Where `YEAR` is a four-digit number, `MONTH` and `DAY` are both two-digit numbers, and `MARKUP` is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+3. 동시성 제어
+- shared lock, exclusive lock : oracle과 동일.
+- oracle은 행 수준 잠금만 사용하지만, mysql은 잠금 전략이 두가지.
+(1) 테이블 잠금 : 전체 테이블을 잠금. 가장 기본적인 잠금 전략이자 가장 낮은 오버헤드를 가진 전략.
+유리 상황 : read local 테이블 잠금은 일부 유형의 동시 쓰기 작업을 허용. 쓰기 및 읽기 대기열은 읽기 대기열보다 전적으로 우선순위가 높은 쓰기 대기열과 별도로 관리.
+(2) 행 잠금 : 스프레드시트의 행만 잠그는 것과 같음. 가장 큰 동시성을 제공하고 오버헤드가 가장 큰 잠금 행태.
 
-Jekyll also offers powerful support for code snippets:
+4. 트랜잭션
+- oracle과 동일. acid 트랙잭션.
+(1) Deadlock
+- 현재 innodb가 deadlock 처리 방법 : exclusive lock이 가장 적은 트랜잭션으로 롤백.(교착상태 발생하면 트랜잭션의 일부 또는 전체를 롤백하지 않고는 교착상태 해제 안됨. -> so, 현재 트랜잭션 시스템은 application layer에서 처리하게 설계돼야함.)
+(2) 트랜잭션 로깅 : oracle과 동일하게 append 방식으로 로깅.
+(3) 트랜잭션에서 스토리지 엔진 혼합 : mysql은 서버 수준에서 트랜잭션 관리 x. -> innoDB가 트랜잭션 자체를 구현. => 단일 트랜잭션에서 서로 다른 엔진을 안정적으로 혼열 불가.
 
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
 
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
 
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
