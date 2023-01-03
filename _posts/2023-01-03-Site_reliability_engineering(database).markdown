@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "2. monitoring in SRE environment"
-date:   2023-01-03 14:16:54 +0900
+date:   2023-01-03 11:11:54 +0900
 categories: mysql
 ---
 * 
