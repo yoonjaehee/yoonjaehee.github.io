@@ -2,7 +2,7 @@
 layout: post
 title:  "1. MySQL architecture"
 date:   2023-01-02 14:16:54 +0900
-categories: jekyll update
+categories: mysql
 ---
 * 스토리지 엔진 : 데이터가 디스크에서 저장되고 검색되는 방법을 구동하는 소프트웨어. mysql에서는 innoDB 권장.
   
