@@ -11,4 +11,35 @@ categories: mysql
 1. **성능 스키마**  
 [1] instrument 요소
 - performance_schema의 setup_instruments 테이블에는 지원되는 모든 instrument 목록이 포함.
-- 오픈 소스 옵션 : 확실한 오프 소스 옵션 = PMM(Percona Monitoring and Management). 클라/서버 쌍으로 작동하며 매트릭을 수집하여 서버 부분으로 보내는 클라이언트를 DB instance 에 설치. -> 장점 : mysql 성능 모니터링에 대한 Percona 커뮤니티의 오랜 경험 바탕으로 대시보드 구성 가능.
+- 특정 instrument가 검사하는 내용을 이해하려면 instrument 명, 직관, 그리고 mysql 소스 코드에 대한 지식을 활용해야함. because almost document's row has null value. 
+- ex) statement/sql/error, statement/abstract/Query, Statement/abstract/new_packet, statement/abstract/relay_log, memory/performance_schema/mutex_instances <br/>
+[2] 컨슈머 체계
+- consumer는 instrument가 정보를 보내는 대상.
+- _current : 현재 서버에서 발생하고 있는 이벤트
+- _history/_history_long : 스레드당 최종 100/10000개의 완료된 이벤트
+- events_waits : low level server
+- events_statements : SQL문
+- events_stages : 임시 테이블 생성이나 데이터 전송과 같은 profile 정보
+- event_transactions : transaction들<br/>
+[3] 요약테이블과 digest
+- 요약테이블 : 테이블이 제안하는 모든 것에 대한 집계된 정보를 저장.
+- instance : MYSQL 설치에 사용할 수 있는 객체 인스턴스. 
+- 자원 소비 : consumer의 최대 사이즈를 설정해서 사용하는 메모리양 제한 가능. performance_schema의 일부 테이블은 자동 크기 조정을 지원. <br/>
+[4] sys 스키마
+- performance_schema에 대한 뷰와 stored routine 으로만 구성.
+- performance_schema를 보다 손쉽게 사용하도록 설계. 자체적으로 데이터 저장 x.(performance_schema의 테이블에 저장된 데이터만 액세스 할 수 있다.)
+[5] 스레드 이해하기 
+- 각 스레드는 최소 두개의 고유 식별자가 있음. ex) 운영체제 스레드 id + 내부적인 MYSQL 스레드 id.
+- mysql 스레드 id = performance_schema의 thread_id
+- performance_schema는 모든 곳에서 thread_id를 사용하는 반면, processlist_id 는 threads 테이블에서만 사용 가능. ex) processlist_id를 가져와서 잠금을 가지고 있는 연결을 종류하는 경우, 해당 값을 얻기 위해 threads 테이블을 조회해야함.<br/>
+
+**2. 설정**
+[1] 활성화
+- performance_schema 변수 on/off
+- instrument 활성화 방법<br/>
+1. update performance_schema.setup_instruments set enable Where name = "statement/sql/select"<br/>
+2. sys schema에서 ps_setup_enable_instrument stored procedure 호출<br/>
+ex) CALL sys.ps_setup_enable_instrument('statement/sql/select'); 
+3. 서버 시작 때 performance-schema-instrument parameter 사용<br/>
+ex) performance-schema-instrument='statement/sql/select=ON'<br/>
+- 컨슈머 활성화와 비활성화 
