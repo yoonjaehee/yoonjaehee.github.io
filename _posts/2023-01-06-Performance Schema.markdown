@@ -7,7 +7,7 @@ categories: mysql
 * performance schema : MYSQL 서버 내에서 실행되는 작업에 대한 상세한 메트릭 제공(disk wait time, response time, query execute time.. etc).
 * instrument : 정보를 얻고자 하는 mysql 코드의 어느 부분을 나타냄. 
 * consumer : 어떤 코드가 수행되었는지에 대한 정보를 저장하는 단순한 테이블(instrument가 정보를). 
-* digest(바인드 변수 활용) : 쿼리에서 변경되는 부분을 제거하고 쿼리를 집계하는 방법. 
+* digest(바인드 변수 활용) : 쿼리에서 변경되는 부분을 제거하고 쿼리를 집계하는 방법. <br/>
 1. **성능 스키마**  
 [1] instrument 요소
 - performance_schema의 setup_instruments 테이블에는 지원되는 모든 instrument 목록이 포함.
